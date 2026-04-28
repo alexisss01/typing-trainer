@@ -284,7 +284,7 @@ main{width:100%;max-width:640px;padding:2.5rem 1.5rem 5rem;}
   <div class="hint-row" id="hint"></div>
 
   <div class="btns">
-    <button class="btn primary" onclick="next()">下一个 <span class="shortcut">Enter</span></button>
+    <button class="btn primary" onclick="next()">下一个 <span class="shortcut">Enter\Tab</span></button>
     <button class="btn" onclick="skip()">跳过</button>
   </div>
 </main>
@@ -454,6 +454,7 @@ function next() {
   const idx = avail[Math.floor(Math.random() * avail.length)];
   used.push(idx);
   cur = words[idx];
+  speechSynthesis.speak(Object.assign(new SpeechSynthesisUtterance(cur.en), {lang:'en-UK', rate:0.9}));
   typed = ''; finished = false; t0 = null; totalCh = 0; errCh = 0;
   const inp = document.getElementById('inp');
   inp.value = '';
