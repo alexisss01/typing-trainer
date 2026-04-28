@@ -37,7 +37,7 @@ body{
 }
 
 body.light{
-  --bg:#d8d8d8;
+  --bg:#f5f4f0;
   --surface:#ffffff;
   --surface2:#ebebeb;
   --border:rgba(0,0,0,0.08);
@@ -520,7 +520,7 @@ function next() {
   used.push(idx);
   history.push(idx);
   cur = words[idx];
-  speechSynthesis.speak(Object.assign(new SpeechSynthesisUtterance(cur.en), {lang:'en-UK', rate:0.9}));
+  speak();
   typed = ''; finished = false; t0 = null; totalCh = 0; errCh = 0;
   const inp = document.getElementById('inp');
   inp.value = '';
@@ -533,6 +533,15 @@ function next() {
   document.getElementById('w-ex').textContent = cur.ex ? '例: ' + cur.ex : '';
   renderChars();
   inp.focus();
+}
+
+function speak() {
+  if (!cur) return;
+  speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(cur.en);
+  utter.lang = 'en-GB';
+  utter.rate = 0.9;
+  speechSynthesis.speak(utter);
 }
 
 function skip() {
@@ -565,7 +574,7 @@ function prev() {
   document.getElementById('w-ph').textContent = cur.ph || '';
   document.getElementById('w-cn').textContent = cur.cn;
   document.getElementById('w-ex').textContent = cur.ex ? '例: ' + cur.ex : '';
-  speechSynthesis.speak(Object.assign(new SpeechSynthesisUtterance(cur.en), {lang:'en-US', rate:0.9}));
+  speak();
   renderChars();
   inp.focus();
 }
