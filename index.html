@@ -304,7 +304,7 @@ main{width:100%;max-width:640px;padding:2.5rem 1.5rem 5rem;}
   <div class="prog-track"><div class="prog-fill" id="prog"></div></div>
 
   <div class="stats">
-    <div class="stat"><div class="stat-n" id="s-wpm">—</div><div class="stat-l">WPM</div></div>
+    <div class="stat"><div class="stat-n" id="s-wpm">—</div><div class="stat-l">用时</div></div>
     <div class="stat"><div class="stat-n" id="s-acc">—</div><div class="stat-l">准确率</div></div>
     <div class="stat"><div class="stat-n" id="s-streak">0</div><div class="stat-l">连续</div></div>
     <div class="stat"><div class="stat-n" id="s-done">0</div><div class="stat-l">已完成</div></div>
@@ -612,11 +612,10 @@ document.addEventListener('keydown', function(e) {
 
 function onDone() {
   finished = true;
-  const mins = (Date.now() - t0) / 60000;
-  const wpm = mins > 0 ? Math.round(cur.en.trim().split(/\s+/).length / mins) : 0;
+  const secs = ((Date.now() - t0) / 1000).toFixed(2);
   const acc = totalCh > 0 ? Math.round((totalCh - errCh) / totalCh * 100) : 100;
   streak++; done++;
-  document.getElementById('s-wpm').textContent = wpm || '—';
+  document.getElementById('s-wpm').textContent = secs + 's';
   document.getElementById('s-acc').textContent = acc + '%';
   document.getElementById('s-streak').textContent = streak;
   document.getElementById('s-done').textContent = done;
