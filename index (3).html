@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>打字练英语</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:#0f0f0f;
+  --surface:#181818;
+  --surface2:#222;
+  --border:rgba(255,255,255,0.07);
+  --border2:rgba(255,255,255,0.14);
+  --text:#e8e6e0;
+  --muted:#888;
+  --hint:#444;
+  --green:#4ade80;
+  --green-dim:rgba(74,222,128,0.12);
+  --red:#f87171;
+  --red-dim:rgba(248,113,113,0.12);
+  --amber:#fbbf24;
+  --mono:'DM Mono',monospace;
+  --sans:'DM Sans',sans-serif;
+}
+
+body.light{
+  --bg:#d8d8d8;
+  --surface:#ffffff;
+  --surface2:#ebebeb;
+  --border:rgba(0,0,0,0.08);
+  --border2:rgba(0,0,0,0.15);
+  --text:#1a1a1a;
+  --muted:#666;
+  --hint:#aaa;
+  --green:#16a34a;
+  --green-dim:rgba(22,163,74,0.1);
+  --red:#dc2626;
+  --red-dim:rgba(220,38,38,0.1);
+  --amber:#d97706;
+}
+
+body{
+  font-family:var(--sans);
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+
+/* ── header ── */
+header{
+  width:100%;padding:0 2rem;height:56px;
+  display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid var(--border);
+  position:sticky;top:0;
+  background:rgba(15,15,15,0.92);
+  backdrop-filter:blur(12px);
+  z-index:10;
+}
+.logo{font-family:var(--mono);font-size:14px;letter-spacing:0.05em;color:var(--muted);}
+.logo b{color:var(--green);font-weight:500;}
+
+.upload-btn,.theme-btn,.mic-btn{
+  font-family:var(--sans);
+  font-size:13px;
+  padding:5px 12px;
+  border-radius:6px;
+  border:1px solid var(--border2);
+  background:transparent;
+  color:var(--muted);
+  cursor:pointer;
+  transition:all 0.15s;
+}
+.upload-btn:hover{border-color:var(--green);color:var(--green);}
+.theme-btn{font-size:16px;padding:4px 8px;}
+.theme-btn:hover,.mic-btn:hover{background:var(--surface2);}
+.mic-btn{font-size:14px;line-height:1;}
+
+/* ── main ── */
+main{width:100%;max-width:640px;padding:2.5rem 1.5rem 5rem;}
+
+/* ── tabs ── */
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:2rem;}
+.tab{
+  font-size:12px;padding:5px 14px;
+  border-radius:100px;
+  border:1px solid var(--border);
+  background:transparent;color:var(--hint);
+  cursor:pointer;transition:all 0.15s;
+  font-family:var(--sans);letter-spacing:0.03em;
+}
+.tab:hover{border-color:var(--border2);color:var(--muted);}
+.tab.active{border-color:var(--green);color:var(--green);background:var(--green-dim);}
+
+/* ── progress ── */
+.prog-track{height:1px;background:var(--border);margin-bottom:2rem;}
+.prog-fill{height:1px;background:var(--green);transition:width 0.5s ease;width:0%;}
+
+/* ── stats ── */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:1.75rem;}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:0.75rem;text-align:center;}
+.stat-n{font-family:var(--mono);font-size:18px;font-weight:500;color:var(--text);}
+.stat-l{font-size:10px;color:var(--hint);margin-top:3px;letter-spacing:0.06em;text-transform:uppercase;}
+
+/* ── word card ── */
+.word-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:14px;padding:1.5rem 1.75rem;
+  margin-bottom:1rem;transition:border-color 0.25s;
+}
+.word-card.flash-green{border-color:var(--green);}
+.word-card.flash-red{border-color:var(--red);}
+.word-en{font-family:var(--mono);font-size:24px;font-weight:500;color:var(--text);margin-bottom:4px;}
+.word-ph{font-family:var(--mono);font-size:12px;color:var(--hint);margin-bottom:8px;}
+.word-cn{font-size:15px;color:var(--muted);font-weight:300;}
+.word-ex{
+  font-size:12px;color:var(--hint);
+  margin-top:12px;padding-top:12px;
+  border-top:1px solid var(--border);
+  font-style:italic;line-height:1.7;font-family:var(--mono);
+}
+
+/* ── char display ── */
+.chars{
+  font-family:var(--mono);font-size:22px;letter-spacing:2px;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:10px;padding:1.1rem 1.5rem;
+  margin-bottom:0.75rem;min-height:62px;
+  display:flex;align-items:center;flex-wrap:wrap;line-height:2;
+}
+.c{color:var(--hint);}
+.c.ok{color:var(--green);}
+.c.bad{color:var(--red);background:rgba(248,113,113,0.3);border-radius:2px;font-weight:700;}
+.c.cur{border-left:2px solid var(--amber);}
+
+/* ── input ── */
+#inp{
+  width:100%;font-family:var(--mono);font-size:16px;
+  padding:12px 16px;border-radius:10px;
+  border:1px solid var(--border2);
+  background:var(--surface2);color:var(--text);
+  outline:none;transition:border-color 0.15s,box-shadow 0.15s;
+  margin-bottom:0.75rem;caret-color:var(--amber);
+}
+#inp:focus{border-color:rgba(74,222,128,0.4);box-shadow:0 0 0 3px rgba(74,222,128,0.07);}
+#inp.shake{animation:shake 0.25s ease;}
+@keyframes shake{0%,100%{transform:translateX(0)}30%{transform:translateX(-5px)}70%{transform:translateX(5px)}}
+
+/* ── feedback ── */
+.hint-row{min-height:28px;margin-bottom:0.75rem;font-size:13px;display:flex;align-items:center;gap:10px;}
+.badge{font-size:11px;font-weight:500;padding:3px 12px;border-radius:100px;letter-spacing:0.04em;}
+.badge.p{background:var(--green-dim);color:var(--green);}
+.badge.g{background:rgba(251,191,36,0.12);color:var(--amber);}
+.badge.r{background:var(--red-dim);color:var(--red);}
+
+/* ── buttons ── */
+.btns{display:flex;gap:8px;flex-wrap:wrap;}
+.btn{
+  font-family:var(--sans);font-size:13px;
+  padding:9px 20px;border-radius:8px;
+  border:1px solid var(--border2);
+  background:transparent;color:var(--muted);
+  cursor:pointer;transition:all 0.15s;letter-spacing:0.02em;
+}
+.btn:hover{background:var(--surface2);color:var(--text);}
+.btn:active{transform:scale(0.97);}
+.btn.primary{background:var(--green);color:#0a1a0f;border-color:var(--green);font-weight:500;}
+.btn.primary:hover{opacity:0.88;}
+.shortcut{font-size:10px;color:rgba(10,26,15,0.5);margin-left:4px;}
+
+/* ── typo panel ── */
+.typo-panel{
+  position:fixed;left:0;top:50%;transform:translateY(-50%);
+  width:160px;
+  background:var(--surface);
+  border:1px solid var(--border2);border-left:none;
+  border-radius:0 12px 12px 0;
+  overflow:hidden;z-index:20;
+  transition:width 0.25s ease;
+}
+.typo-panel.collapsed{width:32px;}
+.typo-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 12px;cursor:pointer;
+  border-bottom:1px solid var(--border);
+  font-size:12px;font-weight:500;color:var(--muted);
+  white-space:nowrap;overflow:hidden;
+  user-select:none;
+}
+.typo-toggle{font-size:10px;color:var(--hint);flex-shrink:0;transition:transform 0.2s;}
+.typo-panel.collapsed .typo-toggle{transform:rotate(180deg);}
+.typo-label{overflow:hidden;}
+.typo-panel.collapsed .typo-label{display:none;}
+.typo-body{
+  padding:8px 12px;max-height:320px;overflow-y:auto;
+  transition:opacity 0.2s;
+}
+.typo-panel.collapsed .typo-body{opacity:0;pointer-events:none;}
+.typo-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:5px 0;border-bottom:1px solid var(--border);
+}
+.typo-row:last-child{border-bottom:none;}
+.typo-char{font-family:var(--mono);font-size:15px;font-weight:600;color:var(--text);}
+.typo-count{font-size:11px;padding:2px 7px;border-radius:10px;background:var(--red-dim);color:var(--red);}
+.typo-empty{font-size:12px;color:var(--hint);}
+
+/* ── upload modal ── */
+.overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);
+  z-index:100;align-items:center;justify-content:center;
+}
+.overlay.open{display:flex;}
+.modal{
+  background:var(--surface);border:1px solid var(--border2);
+  border-radius:16px;padding:1.75rem;
+  width:100%;max-width:460px;margin:1rem;
+}
+.modal h2{font-size:15px;font-weight:500;margin-bottom:0.5rem;}
+.modal p{font-size:13px;color:var(--muted);margin-bottom:1rem;line-height:1.7;}
+.modal pre{
+  font-family:var(--mono);font-size:11px;
+  background:var(--bg);border:1px solid var(--border);
+  border-radius:8px;padding:1rem;margin-bottom:1rem;
+  overflow-x:auto;color:var(--muted);white-space:pre-wrap;line-height:1.6;
+}
+.file-input{
+  width:100%;font-size:13px;padding:9px 12px;
+  border:1px solid var(--border2);border-radius:8px;
+  background:var(--surface2);color:var(--text);
+  margin-bottom:1rem;cursor:pointer;font-family:var(--sans);
+}
+.modal-btns{display:flex;gap:8px;justify-content:flex-end;}
+#upload-msg{font-size:13px;color:var(--green);margin-bottom:0.5rem;font-family:var(--mono);}
+
+@media(max-width:480px){
+  .stats{grid-template-columns:repeat(2,1fr);}
+  .chars{font-size:18px;letter-spacing:1px;}
+  .word-en{font-size:20px;}
+  .typo-panel{display:none;}
+}
+</style>
+</head>
+<body>
+
+<!-- 错误统计侧边栏 -->
+<div class="typo-panel" id="typo-panel">
+  <div class="typo-header" onclick="toggleTypoPanel()">
+    <span class="typo-label">错误统计</span>
+    <span class="typo-toggle">▶</span>
+  </div>
+  <div class="typo-body" id="typo-list">
+    <span class="typo-empty">暂无错误</span>
+  </div>
+</div>
+
+<header>
+  <div class="logo">type<b>英语</b></div>
+  <button class="theme-btn" onclick="toggleTheme()" id="theme-btn">☀️</button>
+  <button class="upload-btn" onclick="openModal()">+ 上传词库</button>
+</header>
+
+<main>
+  <!-- 模式切换 -->
+  <div style="display:flex;gap:8px;margin-bottom:1rem;align-items:center;">
+    <span style="font-size:12px;color:var(--muted);">模式：</span>
+    <button class="tab active" id="btn-random" onclick="setMode('random')">随机练习</button>
+    <button class="tab" id="btn-order" onclick="setMode('order')">顺序学习</button>
+  </div>
+
+  <!-- 分类标签 -->
+  <div class="tabs" id="tabs"></div>
+
+  <!-- 进度条 -->
+  <div class="prog-track"><div class="prog-fill" id="prog"></div></div>
+
+  <!-- 统计 -->
+  <div class="stats">
+    <div class="stat"><div class="stat-n" id="s-wpm">—</div><div class="stat-l">用时</div></div>
+    <div class="stat"><div class="stat-n" id="s-acc">—</div><div class="stat-l">准确率</div></div>
+    <div class="stat"><div class="stat-n" id="s-streak">0</div><div class="stat-l">本词错误</div></div>
+    <div class="stat"><div class="stat-n" id="s-done">0</div><div class="stat-l">已完成</div></div>
+  </div>
+
+  <!-- 单词卡 -->
+  <div class="word-card" id="card">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div class="word-en" id="w-en"></div>
+      <button class="mic-btn" onclick="speak()" title="朗读">🎙️</button>
+    </div>
+    <div class="word-ph" id="w-ph"></div>
+    <div class="word-cn" id="w-cn">选择分类，点击输入框开始</div>
+    <div class="word-ex" id="w-ex"></div>
+  </div>
+
+  <!-- 字符显示 -->
+  <div class="chars" id="chars">
+    <span style="font-size:13px;color:var(--hint);font-family:var(--sans);">点击下方输入框开始打字...</span>
+  </div>
+
+  <!-- 输入框 -->
+  <input id="inp" type="text" placeholder="在这里打字..."
+    autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+
+  <!-- 反馈 -->
+  <div class="hint-row" id="hint"></div>
+
+  <!-- 按钮 -->
+  <div class="btns">
+    <button class="btn" onclick="prev()">上一个 <span class="shortcut">←</span></button>
+    <button class="btn primary" onclick="next()">下一个 <span class="shortcut">Enter</span></button>
+    <button class="btn" onclick="retry()">再练一次 <span class="shortcut">↑</span></button>
+  </div>
+</main>
+
+<!-- 上传词库弹窗 -->
+<div class="overlay" id="overlay" onclick="bgClose(event)">
+  <div class="modal">
+    <h2>上传自定义词库</h2>
+    <p>上传 JSON 文件，格式如下。上传后自动添加为新分类，下次打开仍然保留。</p>
+    <pre>{
+  "label": "考研词汇",
+  "words": [
+    {
+      "en": "abandon",
+      "ph": "/əˈbændən/",
+      "cn": "放弃；抛弃",
+      "ex": "Don't abandon your dreams."
+    }
+  ]
+}</pre>
+    <div id="upload-msg"></div>
+    <input type="file" class="file-input" accept=".json" onchange="handleUpload(event)"/>
+    <div class="modal-btns">
+      <button class="btn" onclick="closeModal()">关闭</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+//  词库
+// ══════════════════════════════════════════
+const BUILTIN = {
+  daily: {
+    label: "日常词汇",
+    words: [
+      {en:"beautiful",     ph:"/ˈbjuːtɪfl/",       cn:"美丽的",       ex:"The sunset was absolutely beautiful."},
+      {en:"important",     ph:"/ɪmˈpɔːrtnt/",      cn:"重要的",       ex:"Exercise is important for your health."},
+      {en:"remember",      ph:"/rɪˈmembər/",        cn:"记住；记得",   ex:"Remember to bring your umbrella."},
+      {en:"understand",    ph:"/ˌʌndərˈstænd/",    cn:"理解；明白",   ex:"I don't understand this question."},
+      {en:"experience",    ph:"/ɪkˈspɪriəns/",     cn:"经历；经验",   ex:"She has a lot of teaching experience."},
+      {en:"comfortable",   ph:"/ˈkʌmftərbl/",      cn:"舒适的",       ex:"This sofa is very comfortable."},
+      {en:"interesting",   ph:"/ˈɪntrɪstɪŋ/",     cn:"有趣的",       ex:"That's a very interesting idea!"},
+      {en:"government",    ph:"/ˈɡʌvərnmənt/",    cn:"政府",         ex:"The government announced new policies."},
+      {en:"environment",   ph:"/ɪnˈvaɪrənmənt/",  cn:"环境",         ex:"We should protect our environment."},
+      {en:"immediately",   ph:"/ɪˈmiːdiətli/",    cn:"立即；马上",   ex:"Please call me immediately."},
+      {en:"different",     ph:"/ˈdɪfrənt/",        cn:"不同的",       ex:"We have different opinions."},
+      {en:"together",      ph:"/təˈɡeðər/",        cn:"一起；共同",   ex:"Let's work together on this."},
+      {en:"necessary",     ph:"/ˈnesəseri/",       cn:"必要的",       ex:"Is it necessary to bring ID?"},
+      {en:"opportunity",   ph:"/ˌɒpəˈtjuːnɪti/",  cn:"机会；时机",   ex:"This is a great opportunity."},
+      {en:"communicate",   ph:"/kəˈmjuːnɪkeɪt/",  cn:"交流；沟通",   ex:"We need to communicate better."},
+    ]
+  },
+  business: {
+    label: "商务英语",
+    words: [
+      {en:"negotiate",     ph:"/nɪˈɡoʊʃieɪt/",    cn:"谈判；协商",    ex:"We need to negotiate the contract terms."},
+      {en:"deadline",      ph:"/ˈdedlaɪn/",        cn:"截止日期",      ex:"The project deadline is next Friday."},
+      {en:"presentation",  ph:"/ˌprezənˈteɪʃn/",  cn:"演示；报告",    ex:"She gave an excellent presentation."},
+      {en:"collaboration", ph:"/kəˌlæbəˈreɪʃn/",  cn:"合作；协作",    ex:"Good collaboration leads to success."},
+      {en:"strategy",      ph:"/ˈstrætɪdʒi/",     cn:"策略；战略",    ex:"We need a better marketing strategy."},
+      {en:"efficiency",    ph:"/ɪˈfɪʃənsi/",      cn:"效率；效能",    ex:"We should improve our work efficiency."},
+      {en:"investment",    ph:"/ɪnˈvestmənt/",    cn:"投资",          ex:"This is a smart long-term investment."},
+      {en:"professional",  ph:"/prəˈfeʃənl/",     cn:"专业的；职业的", ex:"Always be professional at work."},
+      {en:"accomplish",    ph:"/əˈkʌmplɪʃ/",      cn:"完成；实现",    ex:"We accomplished all our targets."},
+      {en:"quarterly",     ph:"/ˈkwɔːrtərli/",    cn:"季度的",        ex:"The quarterly report looks promising."},
+      {en:"revenue",       ph:"/ˈrevənjuː/",      cn:"收入；营收",    ex:"Revenue increased by 20% this year."},
+      {en:"stakeholder",   ph:"/ˈsteɪkhoʊldər/",  cn:"利益相关者",    ex:"All stakeholders approved the plan."},
+    ]
+  },
+  phrases: {
+    label: "常用短语",
+    words: [
+      {en:"by the way",        ph:"", cn:"顺便说一下",    ex:"By the way, have you heard the news?"},
+      {en:"in addition",       ph:"", cn:"另外；此外",     ex:"In addition, we need more funding."},
+      {en:"as a result",       ph:"", cn:"因此；结果",     ex:"As a result, the project was delayed."},
+      {en:"in general",        ph:"", cn:"一般来说",       ex:"In general, people prefer warm weather."},
+      {en:"at the moment",     ph:"", cn:"此刻；目前",     ex:"I am very busy at the moment."},
+      {en:"no wonder",         ph:"", cn:"难怪；怪不得",   ex:"No wonder you are tired!"},
+      {en:"on the other hand", ph:"", cn:"另一方面",       ex:"On the other hand, it saves time."},
+      {en:"keep in touch",     ph:"", cn:"保持联系",       ex:"Let's keep in touch after graduation."},
+      {en:"take it easy",      ph:"", cn:"放轻松；别紧张", ex:"Take it easy, you'll do great!"},
+      {en:"right away",        ph:"", cn:"立刻；马上",     ex:"I'll be there right away."},
+      {en:"so far so good",    ph:"", cn:"目前为止还不错", ex:"So far so good — no major issues."},
+      {en:"make up your mind", ph:"", cn:"下定决心",       ex:"You need to make up your mind soon."},
+    ]
+  },
+  idioms: {
+    label: "习语表达",
+    words: [
+      {en:"break the ice",                  ph:"", cn:"打破沉默；开场",   ex:"A joke can help break the ice."},
+      {en:"hit the nail on the head",        ph:"", cn:"说到点子上",       ex:"You hit the nail on the head!"},
+      {en:"once in a blue moon",             ph:"", cn:"千载难逢；极少",   ex:"He visits once in a blue moon."},
+      {en:"beat around the bush",            ph:"", cn:"拐弯抹角",         ex:"Stop beating around the bush."},
+      {en:"bite the bullet",                 ph:"", cn:"咬紧牙关；硬撑",   ex:"Just bite the bullet and finish it."},
+      {en:"cost an arm and a leg",           ph:"", cn:"非常昂贵",         ex:"That car costs an arm and a leg."},
+      {en:"under the weather",               ph:"", cn:"身体不舒服",       ex:"I'm feeling a bit under the weather."},
+      {en:"burn the midnight oil",           ph:"", cn:"开夜车；熬夜工作", ex:"She burned the midnight oil to finish."},
+      {en:"the ball is in your court",       ph:"", cn:"该你决定了",       ex:"I've said my part — the ball is in your court."},
+      {en:"every cloud has a silver lining", ph:"", cn:"否极泰来",         ex:"Every cloud has a silver lining."},
+    ]
+  }
+};
+
+// ══════════════════════════════════════════
+//  状态
+// ══════════════════════════════════════════
+let cats = {};
+let activeCat = '';
+let words = [];
+let cur = null;
+let typed = '';
+let t0 = null;
+let totalCh = 0, errCh = 0;
+let done = 0;
+let finished = false;
+let used = [];
+let history = [];
+let mode = 'random';
+let orderIdx = 0;
+let typoMap = {}; // 累计所有词的错误字母统计
+
+// ══════════════════════════════════════════
+//  初始化
+// ══════════════════════════════════════════
+function init() {
+  cats = { ...BUILTIN };
+  try {
+    const saved = localStorage.getItem('customCats');
+    if (saved) Object.assign(cats, JSON.parse(saved));
+  } catch(e) {}
+  if (localStorage.getItem('theme') === 'light') {
+    document.body.classList.add('light');
+    document.getElementById('theme-btn').textContent = '🌙';
+  }
+  renderTabs();
+  switchCat(Object.keys(cats)[0]);
+}
+
+// ══════════════════════════════════════════
+//  分类 & 模式
+// ══════════════════════════════════════════
+function renderTabs() {
+  const el = document.getElementById('tabs');
+  el.innerHTML = '';
+  for (const [k, v] of Object.entries(cats)) {
+    const b = document.createElement('button');
+    b.className = 'tab' + (k === activeCat ? ' active' : '');
+    b.textContent = v.label;
+    b.onclick = () => switchCat(k);
+    el.appendChild(b);
+  }
+}
+
+function switchCat(k) {
+  activeCat = k;
+  words = cats[k].words;
+  used = []; history = [];
+  document.getElementById('inp').value = '';
+  document.getElementById('hint').innerHTML = '';
+  renderTabs();
+  next();
+}
+
+function setMode(m) {
+  mode = m;
+  orderIdx = 0;
+  used = []; history = [];
+  document.getElementById('btn-random').classList.toggle('active', m === 'random');
+  document.getElementById('btn-order').classList.toggle('active', m === 'order');
+  next();
+}
+
+// ══════════════════════════════════════════
+//  单词切换
+// ══════════════════════════════════════════
+
+// 重置每次打字前的状态（不清 typoMap，那是累计的）
+function resetRound() {
+  typed = ''; finished = false; t0 = null; totalCh = 0; errCh = 0;
+  const inp = document.getElementById('inp');
+  inp.value = ''; inp.disabled = false;
+  document.getElementById('s-streak').textContent = 0;
+  document.getElementById('hint').innerHTML = '';
+  document.getElementById('card').className = 'word-card';
+}
+
+// 把当前单词信息渲染到卡片
+function renderCard() {
+  document.getElementById('w-en').textContent = cur.en;
+  document.getElementById('w-ph').textContent = cur.ph || '';
+  document.getElementById('w-cn').textContent = cur.cn;
+  document.getElementById('w-ex').textContent = cur.ex ? '例: ' + cur.ex : '';
+}
+
+function next() {
+  if (!words.length) return;
+  let idx;
+  if (mode === 'order') {
+    if (orderIdx >= words.length) orderIdx = 0;
+    idx = orderIdx++;
+  } else {
+    let avail = words.map((_,i) => i).filter(i => !used.includes(i));
+    if (!avail.length) { used = []; avail = words.map((_,i) => i); }
+    idx = avail[Math.floor(Math.random() * avail.length)];
+  }
+  used.push(idx);
+  history.push(idx);
+  cur = words[idx];
+  resetRound();
+  renderCard();
+  renderChars();
+  speak();
+  document.getElementById('inp').focus();
+}
+
+function prev() {
+  if (history.length < 2) return;
+  history.pop();
+  cur = words[history[history.length - 1]];
+  resetRound();
+  renderCard();
+  renderChars();
+  speak();
+  document.getElementById('inp').focus();
+}
+
+function retry() {
+  resetRound();
+  renderChars();
+  document.getElementById('inp').focus();
+}
+
+function skip() {
+  next();
+}
+
+// ══════════════════════════════════════════
+//  발음
+// ══════════════════════════════════════════
+function speak() {
+  if (!cur) return;
+  speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(cur.en);
+  utter.lang = 'en-GB';
+  utter.rate = 0.9;
+  speechSynthesis.speak(utter);
+}
+
+// ══════════════════════════════════════════
+//  打字处理
+// ══════════════════════════════════════════
+document.getElementById('inp').addEventListener('input', function() {
+  if (!cur || finished) return;
+  const val = this.value;
+  if (!t0 && val.length) t0 = Date.now();
+
+  // 只在新增字符时判断对错
+  if (val.length > typed.length) {
+    totalCh++;
+    if (val[val.length - 1] !== cur.en[typed.length]) {
+      errCh++;
+      // 记录出错的字母（累计到 typoMap）
+      const wrongChar = cur.en[typed.length];
+      typoMap[wrongChar] = (typoMap[wrongChar] || 0) + 1;
+      document.getElementById('s-streak').textContent = errCh;
+      renderTypoPanel();
+      this.classList.add('shake');
+      setTimeout(() => this.classList.remove('shake'), 250);
+    }
+  }
+
+  typed = val;
+  renderChars();
+  if (typed === cur.en) onDone();
+});
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter'     && finished) { e.preventDefault(); next(); }
+  if (e.key === 'Tab')                   { e.preventDefault(); finished ? next() : skip(); }
+  if (e.key === 'ArrowLeft')             { e.preventDefault(); prev(); }
+  if (e.key === 'ArrowUp')               { e.preventDefault(); retry(); }
+});
+
+// ══════════════════════════════════════════
+//  完成一个词
+// ══════════════════════════════════════════
+function onDone() {
+  finished = true;
+  done++;
+  const secs = ((Date.now() - t0) / 1000).toFixed(2);
+  const acc  = totalCh > 0 ? Math.round((totalCh - errCh) / totalCh * 100) : 100;
+
+  document.getElementById('s-wpm').textContent  = secs + 's';
+  document.getElementById('s-acc').textContent  = acc + '%';
+  document.getElementById('s-done').textContent = done;
+  document.getElementById('prog').style.width   = Math.min(100, Math.round(used.length / words.length * 100)) + '%';
+  document.getElementById('card').classList.add(acc >= 80 ? 'flash-green' : 'flash-red');
+
+  const [bc, bt] = acc >= 95 ? ['p','Perfect! 完美'] : acc >= 80 ? ['g','Good job! 不错'] : ['r','再试一次会更好'];
+  document.getElementById('hint').innerHTML =
+    `<span class="badge ${bc}">${bt}</span><span style="color:var(--hint);font-size:12px;margin-left:6px">按 Enter 继续</span>`;
+
+  document.getElementById('inp').disabled = true;
+}
+
+// ══════════════════════════════════════════
+//  渲染
+// ══════════════════════════════════════════
+function renderChars() {
+  const target = cur?.en ?? '';
+  let html = '';
+  for (let i = 0; i < target.length; i++) {
+    let cls = 'c';
+    if (i < typed.length)  cls += typed[i] === target[i] ? ' ok' : ' bad';
+    if (i === typed.length) cls += ' cur';
+    html += `<span class="${cls}">${target[i] === ' ' ? '&nbsp;' : target[i]}</span>`;
+  }
+  if (typed.length >= target.length) html += '<span class="c cur">&nbsp;</span>';
+  document.getElementById('chars').innerHTML = html;
+}
+
+function renderTypoPanel() {
+  const el = document.getElementById('typo-list');
+  const entries = Object.entries(typoMap).sort((a, b) => b[1] - a[1]);
+  if (!entries.length) {
+    el.innerHTML = '<span class="typo-empty">暂无错误</span>';
+    return;
+  }
+  el.innerHTML = entries.map(([ch, n]) =>
+    `<div class="typo-row">
+      <span class="typo-char">${ch === ' ' ? '空格' : ch}</span>
+      <span class="typo-count">×${n}</span>
+    </div>`
+  ).join('');
+}
+
+function toggleTypoPanel() {
+  document.getElementById('typo-panel').classList.toggle('collapsed');
+}
+
+// ══════════════════════════════════════════
+//  主题
+// ══════════════════════════════════════════
+function toggleTheme() {
+  const isLight = document.body.classList.toggle('light');
+  document.getElementById('theme-btn').textContent = isLight ? '🌙' : '☀️';
+  localStorage.setItem('theme', isLight ? 'light' : 'dark');
+}
+
+// ══════════════════════════════════════════
+//  自定义词库上传
+// ══════════════════════════════════════════
+function openModal()  { document.getElementById('overlay').classList.add('open'); }
+function closeModal() { document.getElementById('overlay').classList.remove('open'); }
+function bgClose(e)   { if (e.target === document.getElementById('overlay')) closeModal(); }
+
+async function handleUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const msg = document.getElementById('upload-msg');
+  try {
+    const data = JSON.parse(await file.text());
+    if (!data.label || !Array.isArray(data.words)) throw new Error('需要 label 和 words 字段');
+    const key = 'custom_' + file.name.replace(/\.json$/i, '').replace(/\W+/g, '_');
+    cats[key] = data;
+    const custom = {};
+    for (const [k, v] of Object.entries(cats)) {
+      if (k.startsWith('custom_')) custom[k] = v;
+    }
+    localStorage.setItem('customCats', JSON.stringify(custom));
+    msg.style.color = 'var(--green)';
+    msg.textContent = `✓ "${data.label}" 上传成功（${data.words.length} 个词）`;
+    renderTabs();
+    setTimeout(() => { closeModal(); switchCat(key); }, 1200);
+  } catch(err) {
+    msg.style.color = 'var(--red)';
+    msg.textContent = '错误：' + err.message;
+  }
+}
+
+init();
+</script>
+</body>
+</html>
