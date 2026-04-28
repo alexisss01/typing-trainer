@@ -306,7 +306,7 @@ main{width:100%;max-width:640px;padding:2.5rem 1.5rem 5rem;}
   <div class="stats">
     <div class="stat"><div class="stat-n" id="s-wpm">—</div><div class="stat-l">用时</div></div>
     <div class="stat"><div class="stat-n" id="s-acc">—</div><div class="stat-l">准确率</div></div>
-    <div class="stat"><div class="stat-n" id="s-streak">0</div><div class="stat-l">连续</div></div>
+    <div class="stat"><div class="stat-n" id="s-streak">0</div><div class="stat-l">本词错误</div></div>
     <div class="stat"><div class="stat-n" id="s-done">0</div><div class="stat-l">已完成</div></div>
   </div>
 
@@ -522,6 +522,7 @@ function next() {
   cur = words[idx];
   speak();
   typed = ''; finished = false; t0 = null; totalCh = 0; errCh = 0;
+  document.getElementById('s-streak').textContent = 0;
   const inp = document.getElementById('inp');
   inp.value = '';
   inp.disabled = false;
@@ -590,6 +591,7 @@ document.getElementById('inp').addEventListener('input', function() {
     totalCh++;
     if (val[val.length-1] !== cur.en[typed.length]) {
       errCh++;
+      document.getElementById('s-streak').textContent = errCh;
       this.classList.add('shake');
       setTimeout(() => this.classList.remove('shake'), 250);
     }
@@ -617,7 +619,6 @@ function onDone() {
   streak++; done++;
   document.getElementById('s-wpm').textContent = secs + 's';
   document.getElementById('s-acc').textContent = acc + '%';
-  document.getElementById('s-streak').textContent = streak;
   document.getElementById('s-done').textContent = done;
   document.getElementById('prog').style.width = Math.min(100, Math.round(used.length / words.length * 100)) + '%';
   const card = document.getElementById('card');
