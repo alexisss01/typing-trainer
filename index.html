@@ -36,6 +36,22 @@ body{
   align-items:center;
 }
 
+body.light{
+  --bg:#f5f4f0;
+  --surface:#ffffff;
+  --surface2:#ebebeb;
+  --border:rgba(0,0,0,0.08);
+  --border2:rgba(0,0,0,0.15);
+  --text:#1a1a1a;
+  --muted:#666;
+  --hint:#aaa;
+  --green:#16a34a;
+  --green-dim:rgba(22,163,74,0.1);
+  --red:#dc2626;
+  --red-dim:rgba(220,38,38,0.1);
+  --amber:#d97706;
+}
+  
 /* ── header ── */
 header{
   width:100%;
@@ -70,6 +86,16 @@ header{
   letter-spacing:0.02em;
 }
 .upload-btn:hover{border-color:var(--green);color:var(--green);}
+.theme-btn{
+  font-size:16px;
+  padding:4px 8px;
+  border-radius:6px;
+  border:1px solid var(--border2);
+  background:transparent;
+  cursor:pointer;
+  transition:all 0.15s;
+}
+.theme-btn:hover{background:var(--surface2);}
 
 /* ── main ── */
 main{width:100%;max-width:640px;padding:2.5rem 1.5rem 5rem;}
@@ -253,6 +279,7 @@ main{width:100%;max-width:640px;padding:2.5rem 1.5rem 5rem;}
 
 <header>
   <div class="logo">type<b>英语</b></div>
+  <button class="theme-btn" onclick="toggleTheme()" id="theme-btn">☀️</button>
   <button class="upload-btn" onclick="openModal()">+ 上传词库</button>
 </header>
 
@@ -284,8 +311,9 @@ main{width:100%;max-width:640px;padding:2.5rem 1.5rem 5rem;}
   <div class="hint-row" id="hint"></div>
 
   <div class="btns">
-    <button class="btn primary" onclick="next()">下一个 <span class="shortcut">Enter\Tab</span></button>
-    <button class="btn" onclick="skip()">跳过</button>
+      <button class="btn" onclick="prev()">上一个 <span class="shortcut">←</span></button>
+      <button class="btn primary" onclick="next()">下一个 <span class="shortcut">Enter</span></button>
+      <button class="btn" onclick="retry()">再练一次</button>
   </div>
 </main>
 
@@ -403,7 +431,8 @@ let totalCh = 0, errCh = 0;
 let streak = 0, done = 0;
 let finished = false;
 let used = [];
-
+let history = [];
+  
 // ══════════════════════════════════════════
 //  初始化
 // ══════════════════════════════════════════
@@ -453,6 +482,7 @@ function next() {
   if (!avail.length) { used = []; avail = words.map((_,i)=>i); }
   const idx = avail[Math.floor(Math.random() * avail.length)];
   used.push(idx);
+  history.push(idx);
   cur = words[idx];
   speechSynthesis.speak(Object.assign(new SpeechSynthesisUtterance(cur.en), {lang:'en-UK', rate:0.9}));
   typed = ''; finished = false; t0 = null; totalCh = 0; errCh = 0;
@@ -475,6 +505,34 @@ function skip() {
   next();
 }
 
+function retry() {
+  typed = ''; finished = false; t0 = null; totalCh = 0; errCh = 0;
+  const inp = document.getElementById('inp');
+  inp.value = ''; inp.disabled = false;
+  document.getElementById('hint').innerHTML = '';
+  document.getElementById('card').className = 'word-card';
+  renderChars();
+  inp.focus();
+}
+
+function prev() {
+  if (history.length < 2) return;
+  history.pop();
+  const idx = history[history.length - 1];
+  cur = words[idx];
+  typed = ''; finished = false; t0 = null; totalCh = 0; errCh = 0;
+  const inp = document.getElementById('inp');
+  inp.value = ''; inp.disabled = false;
+  document.getElementById('hint').innerHTML = '';
+  document.getElementById('card').className = 'word-card';
+  document.getElementById('w-en').textContent = cur.en;
+  document.getElementById('w-ph').textContent = cur.ph || '';
+  document.getElementById('w-cn').textContent = cur.cn;
+  document.getElementById('w-ex').textContent = cur.ex ? '例: ' + cur.ex : '';
+  speechSynthesis.speak(Object.assign(new SpeechSynthesisUtterance(cur.en), {lang:'en-US', rate:0.9}));
+  renderChars();
+  inp.focus();
+}
 
 // ══════════════════════════════════════════
 //  打字处理
@@ -499,6 +557,7 @@ document.getElementById('inp').addEventListener('input', function() {
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Enter' && finished) { e.preventDefault(); next(); }
   if (e.key === 'Tab') { e.preventDefault(); finished ? next() : skip(); }
+  if (e.key === 'ArrowLeft') { e.preventDefault(); prev(); }
 });
 
 function onDone() {
@@ -572,6 +631,18 @@ async function handleUpload(e) {
   }
 }
 
+function toggleTheme() {
+  const isLight = document.body.classList.toggle('light');
+  document.getElementById('theme-btn').textContent = isLight ? '🌙' : '☀️';
+  localStorage.setItem('theme', isLight ? 'light' : 'dark');
+}
+
+// 记住上次选择
+if (localStorage.getItem('theme') === 'light') {
+  document.body.classList.add('light');
+  document.getElementById('theme-btn').textContent = '🌙';
+}
+  
 init();
 </script>
 </body>
