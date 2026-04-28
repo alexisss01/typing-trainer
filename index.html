@@ -86,6 +86,17 @@ header{
   letter-spacing:0.02em;
 }
 .upload-btn:hover{border-color:var(--green);color:var(--green);}
+.mic-btn{
+  font-size:14px;
+  padding:3px 8px;
+  border-radius:6px;
+  border:1px solid var(--border2);
+  background:transparent;
+  cursor:pointer;
+  transition:all 0.15s;
+  line-height:1;
+}
+.mic-btn:hover{background:var(--surface2);}
 .theme-btn{
   font-size:16px;
   padding:4px 8px;
@@ -284,6 +295,11 @@ main{width:100%;max-width:640px;padding:2.5rem 1.5rem 5rem;}
 </header>
 
 <main>
+  <div style="display:flex;gap:8px;margin-bottom:1rem;align-items:center;">
+  <span style="font-size:12px;color:var(--muted);">模式：</span>
+  <button class="tab active" id="btn-random" onclick="setMode('random')">随机练习</button>
+  <button class="tab" id="btn-order" onclick="setMode('order')">顺序学习</button>
+  </div>
   <div class="tabs" id="tabs"></div>
   <div class="prog-track"><div class="prog-fill" id="prog"></div></div>
 
@@ -295,7 +311,10 @@ main{width:100%;max-width:640px;padding:2.5rem 1.5rem 5rem;}
   </div>
 
   <div class="word-card" id="card">
-    <div class="word-en" id="w-en">准备好了吗？</div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div class="word-en" id="w-en"></div>
+      <button class="mic-btn" onclick="speak()" title="朗读">🎙️</button>
+    </div>
     <div class="word-ph" id="w-ph"></div>
     <div class="word-cn" id="w-cn">选择分类，点击输入框开始</div>
     <div class="word-ex" id="w-ex"></div>
@@ -313,7 +332,7 @@ main{width:100%;max-width:640px;padding:2.5rem 1.5rem 5rem;}
   <div class="btns">
       <button class="btn" onclick="prev()">上一个 <span class="shortcut">←</span></button>
       <button class="btn primary" onclick="next()">下一个 <span class="shortcut">Enter</span></button>
-      <button class="btn" onclick="retry()">再练一次</button>
+      <button class="btn" onclick="retry()">再练一次 <span class="shortcut">↑</span></button>
   </div>
 </main>
 
@@ -432,6 +451,8 @@ let streak = 0, done = 0;
 let finished = false;
 let used = [];
 let history = [];
+let mode = 'random';
+let orderIdx = 0;
   
 // ══════════════════════════════════════════
 //  初始化
@@ -473,14 +494,29 @@ function switchCat(k) {
   next();
 }
 
+function setMode(m) {
+  mode = m;
+  orderIdx = 0;
+  used = []; history = [];
+  document.getElementById('btn-random').classList.toggle('active', m === 'random');
+  document.getElementById('btn-order').classList.toggle('active', m === 'order');
+  next();
+}
+  
 // ══════════════════════════════════════════
 //  单词切换
 // ══════════════════════════════════════════
 function next() {
   if (!words.length) return;
-  let avail = words.map((_,i)=>i).filter(i=>!used.includes(i));
-  if (!avail.length) { used = []; avail = words.map((_,i)=>i); }
-  const idx = avail[Math.floor(Math.random() * avail.length)];
+  let idx;
+  if (mode === 'order') {
+    if (orderIdx >= words.length) orderIdx = 0;
+    idx = orderIdx++;
+  } else {
+    let avail = words.map((_,i)=>i).filter(i=>!used.includes(i));
+    if (!avail.length) { used = []; avail = words.map((_,i)=>i); }
+    idx = avail[Math.floor(Math.random() * avail.length)];
+  }
   used.push(idx);
   history.push(idx);
   cur = words[idx];
@@ -554,10 +590,15 @@ document.getElementById('inp').addEventListener('input', function() {
   if (typed === cur.en) onDone();
 });
 
+// ══════════════════════════════════════════
+//  keyboard listener 
+// ══════════════════════════════════════════
+  
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Enter' && finished) { e.preventDefault(); next(); }
   if (e.key === 'Tab') { e.preventDefault(); finished ? next() : skip(); }
   if (e.key === 'ArrowLeft') { e.preventDefault(); prev(); }
+  if (e.key === 'ArrowUp') { e.preventDefault(); retry(); }
 });
 
 function onDone() {
